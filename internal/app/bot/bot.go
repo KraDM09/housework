@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/KraDM09/housework/internal/app/config"
 	tgBot "github.com/go-telegram/bot"
+	"time"
 )
 
 func New(
@@ -34,7 +35,7 @@ type Bot interface {
 }
 
 func (b *bot) Start(ctx context.Context) {
-	botCtx, cancel := context.WithCancel(ctx)
+	botCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	b.Bot.Start(botCtx)
