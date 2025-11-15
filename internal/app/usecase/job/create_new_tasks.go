@@ -17,6 +17,8 @@ var tasks = []string{
 	"ванная",
 	"плита",
 	"развесить бельё",
+	"протереть пыль",
+	"микроволновка",
 }
 
 func (u *jobUseCase) CreateNewTasks(
@@ -27,11 +29,11 @@ func (u *jobUseCase) CreateNewTasks(
 	users := []models.User{
 		{
 			ChatId: u.cfg.Users.UserChatId1,
-			Tasks:  shuffledTasks[:4],
+			Tasks:  shuffledTasks[:5],
 		},
 		{
 			ChatId: u.cfg.Users.UserChatId2,
-			Tasks:  shuffledTasks[4:],
+			Tasks:  shuffledTasks[5:],
 		},
 	}
 
