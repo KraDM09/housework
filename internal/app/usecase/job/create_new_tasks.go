@@ -2,10 +2,12 @@ package job
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/KraDM09/housework/internal/app/usecase/job/models"
 	"math/rand"
 	"strings"
+	"time"
 )
 
 var tasks = []string{
@@ -24,7 +26,29 @@ var tasks = []string{
 func (u *jobUseCase) CreateNewTasks(
 	ctx context.Context,
 ) error {
-	shuffledTasks := u.getShuffledTasks(tasks)
+	weekKey := u.getWeekKey()
+
+	shuffledTasks := make([]string, 0)
+
+	cachedData, err := u.memcached.Get(weekKey)
+	if err != nil {
+		return err
+	}
+
+	if cachedData != nil {
+		err = json.Unmarshal(cachedData, &shuffledTasks)
+		if err != nil {
+			return err
+		}
+	}
+
+	message := "Тебе выпали"
+
+	if cachedData != nil {
+		message = "Напоминание о задачах"
+	} else {
+		shuffledTasks = u.getShuffledTasks(tasks)
+	}
 
 	users := []models.User{
 		{
@@ -40,14 +64,20 @@ func (u *jobUseCase) CreateNewTasks(
 	for _, usr := range users {
 		err := u.bot.SendMessage(ctx,
 			usr.ChatId,
-			fmt.Sprintf("Тебе выпали🫡: %s", strings.Join(usr.Tasks, ", ")),
+			fmt.Sprintf("%s🫡: %s", message, strings.Join(usr.Tasks, ", ")),
 		)
-
 		if err != nil {
 			panic(err)
 		}
 
 		fmt.Print("Tasks for user ", usr.ChatId, ": ", usr.Tasks)
+	}
+
+	if cachedData == nil {
+		err = u.memcached.Set(weekKey, shuffledTasks, 7*24*60*60)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -76,4 +106,10 @@ func (u *jobUseCase) shuffle(numbers []int) []int {
 	}
 
 	return numbers
+}
+
+func (u *jobUseCase) getWeekKey() string {
+	now := time.Now().In(time.Local)
+	_, week := now.ISOWeek()
+	return fmt.Sprintf("week_%d", week)
 }

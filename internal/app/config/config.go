@@ -9,8 +9,13 @@ import (
 )
 
 type Values struct {
-	Bot   *BotConfig   `envconfig:"BOT" required:"true"`
-	Users *UsersConfig `envconfig:"USERS" required:"true"`
+	Bot       *BotConfig   `envconfig:"BOT" required:"true"`
+	Users     *UsersConfig `envconfig:"USERS" required:"true"`
+	Memcached Memcached    `envconfig:"MEMCACHED" required:"true"`
+}
+
+type Memcached struct {
+	Server string `envconfig:"SERVER" required:"true"`
 }
 
 type BotConfig struct {

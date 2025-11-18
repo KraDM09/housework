@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/KraDM09/housework/internal/app/bot"
+	"github.com/KraDM09/housework/internal/app/client/memcached"
 	"github.com/KraDM09/housework/internal/app/config"
 	"github.com/KraDM09/housework/internal/app/usecase/job"
 )
@@ -22,9 +23,15 @@ func main() {
 		panic(err)
 	}
 
+	mc, err := memcached.NewMemcached(cfg.Memcached.Server)
+	if err != nil {
+		panic(err)
+	}
+
 	newTasksUseCase := job.NewUseCase(
 		telegramBot,
 		cfg,
+		mc,
 	)
 
 	err = newTasksUseCase.CreateNewTasks(ctx)
